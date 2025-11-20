@@ -1,6 +1,6 @@
-# Free Cluely
+# SwiftEase
 
-A desktop application to help you cheat on everything. 
+AI at your fingertips
 
 ## 🚀 Quick Start Guide
 
@@ -13,8 +13,8 @@ A desktop application to help you cheat on everything.
 
 1. Clone the repository:
 ```bash
-git clone [repository-url]
-cd free-cluely
+git clone https://github.com/Vijetz/SwiftEase.git
+cd SwiftEase
 ```
 
 2. Install dependencies:
