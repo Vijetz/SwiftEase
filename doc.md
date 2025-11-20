@@ -1,10 +1,5 @@
-# Reverse-Engineering "Invisible Cheating App" Cluely
 
-Everyone saw Roy Lee's viral stunt with "Cluely," the invisible app designed to secretly ace coding interviews. He pissed off Columbia, Amazon, and pretty much everyone else—but let's skip past the controversy. I tore apart the app to see how it works, and turns out, the tech itself is genuinely interesting.
-
-![Cluely Screenshot](image.png)
-
-### How Cluely Actually Works (Technical Breakdown)
+### How It Actually Works (Technical Breakdown)
 
 Roy built Cluely using Electron, a desktop app framework based on Chromium and Node.js, to create a transparent, always-on-top overlay:
 
