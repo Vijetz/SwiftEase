@@ -159,7 +159,7 @@ CRITICAL: The 'code' field must contain only code. It must not contain any comme
           mimeType: "audio/mp3"
         }
       };
-      const prompt = `${this.systemPrompt}\n\nDescribe this audio clip in a short, concise answer. In addition to your main answer, suggest several possible actions or responses the user could take next based on the audio. Do not return a structured JSON object, just answer naturally as you would to a user.`;
+      const prompt = `${this.systemPrompt}\n\nAnswer the question asked in this audio in a short, concise answer. Answer the question as how the user should answer if they're in an interview. Do not return a structured JSON object, just answer naturally as you would to a user.`;
       const result = await this.model.generateContent([prompt, audioPart]);
       const response = await result.response;
       const text = response.text();
@@ -178,7 +178,7 @@ CRITICAL: The 'code' field must contain only code. It must not contain any comme
           mimeType
         }
       };
-      const prompt = `${this.systemPrompt}\n\nDescribe this audio clip in a short, concise answer. In addition to your main answer, suggest several possible actions or responses the user could take next based on the audio. Do not return a structured JSON object, just answer naturally as you would to a user and be concise.`;
+      const prompt = `${this.systemPrompt}\n\nAnswer the question asked in this audio in a short, concise answer. Answer the question as how the user should answer if they're in an interview. Do not return a structured JSON object, just answer naturally as you would to a user.`;
       const result = await this.model.generateContent([prompt, audioPart]);
       const response = await result.response;
       const text = response.text();
