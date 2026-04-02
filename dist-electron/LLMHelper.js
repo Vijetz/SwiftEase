@@ -4,21 +4,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LLMHelper = void 0;
-const generative_ai_1 = require("@google/generative-ai");
+const genai_1 = require("@google/genai");
 const fs_1 = __importDefault(require("fs"));
 class LLMHelper {
-    model;
-    genAI;
+    ai;
+    modelName;
     //stage 1
     //   private readonly systemPrompt = `You are Wingman AI, a helpful, proactive assistant for any kind of problem or situation. For any user input, analyze the situation, provide a clear problem statement, relevant context, and suggest several possible responses or actions the user could take next. Always explain your reasoning. Present your suggestions as a list of options or next steps.`
     systemPrompt = `You are an expert programmer. Your task is to analyze the user’s request which may include images of code or problems, and provide a direct code based solution. If the user provides code identify any errors and provide a corrected, complete version. If the user provides a problem description, write the code to solve it. Make sure to provide the most optimal solution.`;
     constructor(apiKey) {
-        this.genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ model: process.env.GEMINI_PRO_MODEL });
+        const apiVersion = process.env.GEMINI_API_VERSION || "v1beta";
+        this.ai = new genai_1.GoogleGenAI({ apiKey, apiVersion });
+        this.modelName = process.env.GEMINI_PRO_MODEL || "";
     }
     setModel(modelName) {
         console.log("LLMHelper: setting model to", modelName);
-        this.model = this.genAI.getGenerativeModel({ model: modelName });
+        this.modelName = modelName;
     }
     async fileToGenerativePart(imagePath) {
         const imageData = await fs_1.default.promises.readFile(imagePath);
@@ -33,6 +34,15 @@ class LLMHelper {
                 mimeType
             }
         };
+    }
+    getTextFromResponse(response) {
+        if (!response)
+            return "";
+        if (typeof response.text === "string")
+            return response.text;
+        if (typeof response.text === "function")
+            return response.text();
+        return "";
     }
     cleanJsonResponse(text) {
         // Remove markdown code block syntax if present
@@ -65,9 +75,16 @@ Please provide the output in the following JSON format:
 }
 Important: Return ONLY the JSON object, without any markdown formatting or code blocks.
 CRITICAL: The 'code' field must contain only code. It must not contain any comments, explanations, or any text that is not valid code.`;
-            const result = await this.model.generateContent([prompt, ...imageParts]);
-            const response = await result.response;
-            const text = this.cleanJsonResponse(response.text());
+            const result = await this.ai.models.generateContent({
+                model: this.modelName,
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: prompt }, ...imageParts]
+                    }
+                ]
+            });
+            const text = this.cleanJsonResponse(this.getTextFromResponse(result));
             return JSON.parse(text);
         }
         catch (error) {
@@ -95,10 +112,12 @@ Please provide your response in the following JSON format:
 Important: Return ONLY the JSON object, without any markdown formatting or code blocks.`;
         console.log("[LLMHelper] Calling Gemini LLM for solution...");
         try {
-            const result = await this.model.generateContent(prompt);
+            const result = await this.ai.models.generateContent({
+                model: this.modelName,
+                contents: prompt
+            });
             console.log("[LLMHelper] Gemini LLM returned result.");
-            const response = await result.response;
-            const text = this.cleanJsonResponse(response.text());
+            const text = this.cleanJsonResponse(this.getTextFromResponse(result));
             const parsed = JSON.parse(text);
             console.log("[LLMHelper] Parsed LLM response:", parsed);
             return parsed;
@@ -135,9 +154,16 @@ Please provide the output in the following JSON format:
 }
 Important: Return ONLY the JSON object, without any markdown formatting or code blocks.
 CRITICAL: The 'code' field must contain only code. It must not contain any comments, explanations, or any text that is not valid code.`;
-            const result = await this.model.generateContent([prompt, ...imageParts]);
-            const response = await result.response;
-            const text = this.cleanJsonResponse(response.text());
+            const result = await this.ai.models.generateContent({
+                model: this.modelName,
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: prompt }, ...imageParts]
+                    }
+                ]
+            });
+            const text = this.cleanJsonResponse(this.getTextFromResponse(result));
             const parsed = JSON.parse(text);
             console.log("[LLMHelper] Parsed debug LLM response:", parsed);
             return parsed;
@@ -157,9 +183,16 @@ CRITICAL: The 'code' field must contain only code. It must not contain any comme
                 }
             };
             const prompt = `${this.systemPrompt}\n\nAnswer the question asked in this audio in a short, concise answer. Answer the question as how the user should answer if they're in an interview. Do not return a structured JSON object, just answer naturally as you would to a user.`;
-            const result = await this.model.generateContent([prompt, audioPart]);
-            const response = await result.response;
-            const text = response.text();
+            const result = await this.ai.models.generateContent({
+                model: this.modelName,
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: prompt }, audioPart]
+                    }
+                ]
+            });
+            const text = this.getTextFromResponse(result);
             return { text, timestamp: Date.now() };
         }
         catch (error) {
@@ -176,9 +209,16 @@ CRITICAL: The 'code' field must contain only code. It must not contain any comme
                 }
             };
             const prompt = `${this.systemPrompt}\n\nAnswer the question asked in this audio in a short, concise answer. Answer the question as how the user should answer if they're in an interview. Do not return a structured JSON object, just answer naturally as you would to a user.`;
-            const result = await this.model.generateContent([prompt, audioPart]);
-            const response = await result.response;
-            const text = response.text();
+            const result = await this.ai.models.generateContent({
+                model: this.modelName,
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: prompt }, audioPart]
+                    }
+                ]
+            });
+            const text = this.getTextFromResponse(result);
             return { text, timestamp: Date.now() };
         }
         catch (error) {
@@ -196,9 +236,16 @@ CRITICAL: The 'code' field must contain only code. It must not contain any comme
                 }
             };
             const prompt = `${this.systemPrompt}\n\nDescribe the content of this image in a short, concise answer. In addition to your main answer, suggest several possible actions or responses the user could take next based on the image. Do not return a structured JSON object, just answer naturally as you would to a user. Be concise and brief.`;
-            const result = await this.model.generateContent([prompt, imagePart]);
-            const response = await result.response;
-            const text = response.text();
+            const result = await this.ai.models.generateContent({
+                model: this.modelName,
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: prompt }, imagePart]
+                    }
+                ]
+            });
+            const text = this.getTextFromResponse(result);
             return { text, timestamp: Date.now() };
         }
         catch (error) {
