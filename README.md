@@ -79,9 +79,3 @@ If you see errors:
 2. Delete `package-lock.json`
 3. Run `npm install` again
 4. Try running the app again using Method 1
-
-## Contribution
-
-I'm unable to maintain this repo actively because I do not have the time for it. Please do not create issues, if you have any PRs feel free to create them and i'll review and merge it.
-
-If you are looking to integrate this for your company, i can work with you to create custom solution. Reach out on [twitter](https://x.com/prathitjoshi_)
